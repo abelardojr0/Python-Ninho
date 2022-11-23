@@ -1,6 +1,5 @@
 inicio = 0
 proximo = 1
-anterior = 0
 print(inicio)
 while proximo < 50:
     print(proximo)

@@ -1,4 +1,7 @@
 import random
+import json
+import requests
+
 
 Planta = {
     "vantagens": ["Terrestre", "Pedra","Água"],
@@ -9,6 +12,8 @@ Fogo = {
     "vantagens": [ "Inseto", "Planta", "Gelo", "Aço"],
     "desvantagens": ["Pedra", "Terrestre", "Água"]
 }
+
+
 
 print(Fogo["vantagens"])
 

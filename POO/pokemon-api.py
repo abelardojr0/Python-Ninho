@@ -2,74 +2,109 @@ import json
 import requests
 import random
 
+listaPokemon = [] # LISTA QUE VAI ARMAZENAR OS POKEMONS
 
-class Pokemon():
+# CRIANDO O POKEMON 
+class Pokemon:
     def __init__(self,pokemon):
-        resposePokemon = requests.get(pokemon["url"])
-        pokemonJson = json.loads(resposePokemon.content)
-        
         self.nome = pokemon["name"]
-        self.tipo = pokemonJson["types"][0]["type"]["name"]
-        self.hp = pokemonJson["stats"][0]["base_stat"]
-        self.ataque = pokemonJson["stats"][1]["base_stat"]
-        self.defesa = pokemonJson["stats"][2]["base_stat"]
-        self.ataqueEspecial = pokemonJson["stats"][3]["base_stat"]
-        self.defesaEspecial = pokemonJson["stats"][4]["base_stat"]
-        self.velocidade = pokemonJson["stats"][5]["base_stat"]
-        self.altura = pokemonJson["height"]
-        self.peso = pokemonJson["weight"]
+        self.tipo = pokemon["types"][0]["type"]["name"]
+        self.habilidade = pokemon["abilities"][0]["ability"]["name"]
+        self.hp = pokemon["stats"][0]["base_stat"]
+        self.ataque = pokemon["stats"][1]["base_stat"]
+        self.defesa = pokemon["stats"][2]["base_stat"]
+        self.ataqueEspecial = pokemon["stats"][3]["base_stat"]
+        self.defesaEspecial = pokemon["stats"][4]["base_stat"]
+        self.velocidade = pokemon["stats"][5]["base_stat"]
+        self.altura = pokemon["height"]
+        self.peso = pokemon["weight"]
         
+        self.listaVantagens = json.loads(requests.get(pokemon["types"][0]["type"]["url"]).content)["damage_relations"]["double_damage_to"]
+        self.vantagens = []
+        for nome in self.listaVantagens:
+            self.vantagens.append(nome["name"])
+            
+        self.listaDesvantagens = json.loads(requests.get(pokemon["types"][0]["type"]["url"]).content)["damage_relations"]["double_damage_from"]
+        self.desvantagens = []
+        for nome in self.listaDesvantagens:
+            self.desvantagens.append(nome["name"])
+        
+
+#METODO DE EXIBIÇÃO DOS DADOS DO POKEMON
     def getPokemon(self):
         return f"""
     Nome: {self.nome}
     Vida: {self.hp}
     Tipo: {self.tipo}
+    Habilidade: {self.habilidade}
     Ataque: {self.ataque}
     Defesa:{self.defesa}
     Ataque Especial: {self.ataqueEspecial}
     Defesa Especial: {self.defesaEspecial}
     Velocidade: {self.velocidade}
     Altura: {self.altura}
-    Peso: {self.peso}"""
+    Peso: {self.peso}
+    Vantagens: {self.nomesVantagens}
+    Desvantagens: {self.nomesDesvantagens}"""
 
-response = requests.get("https://pokeapi.co/api/v2/pokemon?offset=0&limit=9")
-arquivoJson = json.loads(response.content)
-resultados = arquivoJson["results"]
-listaPokemon = []
+#METODO DE ATAQUE
+    def atacar(self):
+            print(f"O Pokemon {self.nome} atacou usando {self.habilidade}")
 
-for item in resultados:
-    novoPokemon = Pokemon(item)
-    listaPokemon.append(novoPokemon)
+#buscando na API
+resultados = json.loads(requests.get("https://pokeapi.co/api/v2/pokemon?offset=0&limit=9").content)["results"]
+
+#JEITO MAIS VERBOSO PARA QUE EU ENTENDA O PROCESSO.
+# response = requests.get("https://pokeapi.co/api/v2/pokemon?offset=0&limit=9")
+# arquivoJson = json.loads(response.content)
+# resultados = arquivoJson["results"]
+
+for item in resultados:   
+    listaPokemon.append(Pokemon(json.loads(requests.get(item["url"]).content)))
+    
+    #JEITO MAIS VERBOSO PARA QUE EU ENTENDA O PROCESSO.
+    # resposePokemon = requests.get(pokemon["url"])
+    # pokemonJson = json.loads(resposePokemon.content) 
+    #listaPokemon.append(pokemonJson)
 
 
+#MOSTRAR OS DADOS DE TODOS OS POKEMONS
 # for pokemon in listaPokemon:
 #     print(pokemon.getPokemon())
 
 
+def checarVantagens(vantagens, inimigo):
+    vantagem = False
+    if(inimigo.tipo in vantagens):
+        vantagem = True
+    return vantagem
 
 def batalhaPokemon(pokemon1, pokemon2):
-    hp1 = pokemon1.hp
-    hp2 = pokemon2.hp
-    cont1 = 0
-    cont2 = 0
+    [hp1,hp2] = [pokemon1.hp, pokemon2.hp]
+    [cont1, cont2] = [0,0]
 
+    vantagem1 = checarVantagens(pokemon1.vantagens, pokemon2)
+    vantagem2 = checarVantagens(pokemon2.vantagens, pokemon1)
+    modVantagem1 = 0
+    modVantagem2 = 0
+    
+    if(vantagem1):
+        modVantagem1 = 10
+    if(vantagem2):
+        modVantagem2 = 10
 
     while hp1 > 0 and hp2 >0:
-        tentativa1 = random.random() - 0.5
-        tentativa2 = random.random() - 0.5
-        print(tentativa1)
-        print(tentativa2)
-        if(tentativa1 > 0 and hp1 > 0):
-            hp2 -= pokemon1.ataque - (pokemon1.ataque * 0.8)
-            cont1+=1
-            
-        if(tentativa2 > 0 and hp2 > 0):
-            hp1 -= pokemon2.ataque  - (pokemon2.ataque * 0.8)
-            cont2+=1
-            
-        # print(f"Vida do {pokemon1.nome} é: {round(hp1, 2)}")
-        # print(f"Vida do {pokemon2.nome} é: {round(hp2, 2)}")
         
+            [tentativa1, tentativa2] = [random.random() - 0.5, random.random() - 0.5]
+            
+            if(tentativa1 > 0 and hp1 > 0):
+                hp2 -= (pokemon1.ataque  - (pokemon2.defesa * 0.65)) + modVantagem1
+                cont1+=1
+
+                
+            if(tentativa2 > 0 and hp2 > 0):
+                hp1 -= (pokemon2.ataque  - (pokemon1.defesa * 0.65)) + modVantagem2
+                cont2+=1
         
     if(hp1 <= 0 and hp2 > hp1):
         print(f"{pokemon2.nome} ganhou de {pokemon1.nome} e sobrou {round(hp2, 2)} pontos de vida")
@@ -83,5 +118,16 @@ def batalhaPokemon(pokemon1, pokemon2):
     print(f"O {pokemon2.nome} acertou {cont2} ataques")
         
         
+    
         
-batalhaPokemon(listaPokemon[1],listaPokemon[4])
+print("Lista de Pokemons:")
+
+for i in range(len(listaPokemon)):
+    print(f"{i}: {listaPokemon[i].nome} | HP: {listaPokemon[i].hp} | Ataque: {listaPokemon[i].ataque} | Defesa: {listaPokemon[i].defesa}")
+
+
+pokemon1 = int(input("Escolha o primeiro pokemon digitando seu número: "))
+pokemon2 = int(input("Escolha o segundo pokemon digitando seu número: "))
+
+batalhaPokemon(listaPokemon[pokemon1],listaPokemon[pokemon2])
+

@@ -11,9 +11,9 @@ try:
   #                    CREATE TABLE "autores"(
   #                      id INT GENERATED ALWAYS AS IDENTITY,
   #                      nome VARCHAR(255),
-                       
+                      
   #                      PRIMARY KEY(id)
-                       
+                      
   #                    );
   #                    ''')
   
@@ -51,7 +51,7 @@ try:
     listaDeLivros = conexao.consultarBanco('''
                                            SELECT * FROM "livros"
                                             ORDER BY "id" ASC
-                                           ''')
+                                          ''')
     print("ID | Nome")
     for livro in listaDeLivros:
       print(f'{livro[0]} | {livro[1]}')
@@ -64,8 +64,7 @@ try:
       print("ID | Nome")
       for autor in listaDeAutores:
         print(f'{autor[0]} | {autor[1]}')
-   
-   
+
   escolha = 1
   while(escolha!=0):
     escolha = int(input("""O que você quer manipular?

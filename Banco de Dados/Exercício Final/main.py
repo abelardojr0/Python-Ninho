@@ -4,47 +4,36 @@ from Modelo.Usuario import Usuario
 from psycopg2 import Error
 
 try:
-  con = Conexao("Luderia", "postgres", "123", "localhost", "5432")
+  con = Conexao("Luderia", "postgres", "postgres", "localhost", "5432")
   
   def mostrarJogos():
-    listaDeJogos = con.consultarBanco('''
-                        SELECT * FROM jogos
-                          ORDER BY id ASC
-                      ''')
+    listaDeJogos = con.consultaCompleta("jogos")
     for jogo in listaDeJogos:
       print(f"""
             ID - {jogo[0]}
             Nome - {jogo[1]}
             """)
       
-  def buscarJogoEscolhido(id):
-    query = (f'''
-            SELECT * FROM jogos
-              WHERE id = {id}
-            ''')
-    return query
-  
-  def buscarUsuarioEscolhido(id):
-    query = (f'''
-            SELECT * FROM usuarios
-              WHERE id = {id}
-            ''')
-    return query
-  
   def mostrarUsuarios():
-    listaDeUsuarios = con.consultarBanco('''
-                        SELECT * FROM usuarios
-                          ORDER BY id ASC
-                      ''')
+    listaDeUsuarios = con.consultaCompleta("usuarios")
     for jogo in listaDeUsuarios:
         print(f"""
             ID - {jogo[0]}
             Nome - {jogo[1]}
             """)
         
-  escolhaMenuPrincipal = 1
+  def criarObjeto(lista, tipo):        
+    if tipo == "Jogo":
+      objetoCriado = Jogo(lista[0][0], lista[0][1], lista[0][2], lista[0][3], lista[0][4], lista[0][5])
+    elif tipo == "Usuario":
+      objetoCriado = Usuario(lista[0][0], lista[0][1], lista[0][2], lista[0][3])
+    return objetoCriado
+      
+        
+  escolhaMenuPrincipal = input()
   while escolhaMenuPrincipal != 0:
     escolhaMenuPrincipal = int(input("""
+                             MENU PRINCIPAL
                         Escolha o que você deseja fazer:
                         1 - Manipular Jogos
                         2 - Manipular Usuarios
@@ -52,9 +41,10 @@ try:
                         """))
     match escolhaMenuPrincipal:
       case 1:
-        escolhaMenuJogos = 1
+        escolhaMenuJogos = input()
         while escolhaMenuJogos !=0:
           escolhaMenuJogos = int(input("""
+                                             MENU DE JOGOS
                                       Escolha o que você deseja fazer:
                                       1 - Inserir um novo Jogo
                                       2 - Visualizar dados deu um Jogo
@@ -74,22 +64,20 @@ try:
               con.manipularBanco(novoJogo.inserirJogo())
             case 2:
               mostrarJogos()
-              
               escolhaVisualizar = int(input("Escolha pelo ID qual jogo você quer visualizar: "))
-              jogoEscolhidoVisualizar = con.consultarBanco(buscarJogoEscolhido(escolhaVisualizar))
-              
-              novoJogoVisualizar = Jogo(jogoEscolhidoVisualizar[0][0], jogoEscolhidoVisualizar[0][1], jogoEscolhidoVisualizar[0][2], jogoEscolhidoVisualizar[0][3], jogoEscolhidoVisualizar[0][4], jogoEscolhidoVisualizar[0][5])
-              
+              jogoEscolhidoVisualizar = con.consultarBanco(con.consultaPorId("jogos",escolhaVisualizar))
+              novoJogoVisualizar = criarObjeto(jogoEscolhidoVisualizar, "Jogo")
               novoJogoVisualizar.visualizarJogo()
             case 3:
               mostrarJogos()
               
               escolhaAtualizar = int(input("Escolha pelo ID qual jogo você quer atualizar: "))
-              jogoEscolhidoAtualizar = con.consultarBanco(buscarJogoEscolhido(escolhaAtualizar))
+              jogoEscolhidoAtualizar = con.consultarBanco(con.consultaPorId("jogos",escolhaAtualizar))
               
-              novoJogoAtualizar = Jogo(jogoEscolhidoAtualizar[0][0], jogoEscolhidoAtualizar[0][1], jogoEscolhidoAtualizar[0][2], jogoEscolhidoAtualizar[0][3], jogoEscolhidoAtualizar[0][4], jogoEscolhidoAtualizar[0][5])
+              novoJogoAtualizar = criarObjeto(jogoEscolhidoAtualizar, "Jogo")
               
               escolhaMenuAtualizar = int(input("""
+                                                MENU DE CAMPOS DE ALTERAÇÃO DE JOGOS
                                               Escolha qual campo você deseja atualizar: 
                                               1 - Nome
                                               2 - Duração
@@ -100,31 +88,29 @@ try:
               match escolhaMenuAtualizar:
                 case 1:
                   novoJogoAtualizar.setNome(input("Digite o novo nome: "))
-                  con.manipularBanco(novoJogoAtualizar.atualizarJogo())
                 case 2:
                   novoJogoAtualizar.setDuracao(input("Digite a nova duração: "))
-                  con.manipularBanco(novoJogoAtualizar.atualizarJogo())
                 case 3:
                   novoJogoAtualizar.setNumJogadores(input("Digite o novo número de jogadores: "))
-                  con.manipularBanco(novoJogoAtualizar.atualizarJogo())
                 case 4:
                   novoJogoAtualizar.setIdade(input("Digite a nova idade mínima: "))
-                  con.manipularBanco(novoJogoAtualizar.atualizarJogo())
                 case 5:
                   novoJogoAtualizar.setEditora(input("Digite a nova editora: "))
-                  con.manipularBanco(novoJogoAtualizar.atualizarJogo())
+                  
+              con.manipularBanco(novoJogoAtualizar.atualizarJogo())
             case 4: 
               mostrarJogos()
               escolhaDeletar = int(input("Escolha pelo ID qual jogo você quer deletar: "))
-              jogoEscolhidoDeletar = con.consultarBanco(buscarJogoEscolhido(escolhaDeletar))
+              jogoEscolhidoDeletar = con.consultarBanco(con.consultaPorId("jogos",escolhaDeletar))
               
-              novoJogoDeletar = Jogo(jogoEscolhidoDeletar[0][0], jogoEscolhidoDeletar[0][1], jogoEscolhidoDeletar[0][2], jogoEscolhidoDeletar[0][3], jogoEscolhidoDeletar[0][4], jogoEscolhidoDeletar[0][5])
+              novoJogoDeletar = criarObjeto(jogoEscolhidoDeletar, "Jogo")
               
               con.manipularBanco(novoJogoDeletar.deletarJogo())
       case 2:
-        escolhaMenuUsuarios = 1
+        escolhaMenuUsuarios = input()
         while escolhaMenuUsuarios !=0:
           escolhaMenuUsuarios = int(input("""
+                                          MENU DE USUÁRIOS
                                       Escolha o que você deseja fazer:
                                       1 - Inserir um novo Usuário
                                       2 - Visualizar dados deu um Usuário
@@ -144,20 +130,21 @@ try:
               mostrarUsuarios()
               
               escolhaVisualizarUsuarios = int(input("Escolha pelo ID qual usuário você quer visualizar: "))
-              usuarioEscolhidoVisualizar = con.consultarBanco(buscarUsuarioEscolhido(escolhaVisualizarUsuarios))
+              usuarioEscolhidoVisualizar = con.consultarBanco(con.consultaPorId("usuarios",escolhaVisualizarUsuarios))
               
-              novoUsuarioVisualizar = Usuario(usuarioEscolhidoVisualizar[0][0], usuarioEscolhidoVisualizar[0][1], usuarioEscolhidoVisualizar[0][2], usuarioEscolhidoVisualizar[0][3])
+              novoUsuarioVisualizar = criarObjeto(usuarioEscolhidoVisualizar, "Usuario")
               
               novoUsuarioVisualizar.visualizarUsuario()
             case 3:
               mostrarUsuarios()
               
               escolhaAtualizarUsuario = int(input("Escolha pelo ID qual usuário você quer atualizar: "))
-              usuarioEscolhidoAtualizar = con.consultarBanco(buscarUsuarioEscolhido(escolhaAtualizarUsuario))
+              usuarioEscolhidoAtualizar = con.consultarBanco(con.consultaPorId("usuarios",escolhaAtualizarUsuario))
               
-              novoUsuarioAtualizar = Usuario(usuarioEscolhidoAtualizar[0][0], usuarioEscolhidoAtualizar[0][1], usuarioEscolhidoAtualizar[0][2], usuarioEscolhidoAtualizar[0][3])
+              novoUsuarioAtualizar = criarObjeto(usuarioEscolhidoAtualizar, "Jogo")
               
               escolhaMenuAtualizarUsuario = int(input("""
+                                               MENU DE CAMPOS DE ALTERAÇÃO DE USUÁRIOS
                                               Escolha qual campo você deseja atualizar: 
                                               1 - Nome
                                               2 - CPF
@@ -166,25 +153,21 @@ try:
               match escolhaMenuAtualizarUsuario:
                 case 1:
                   novoUsuarioAtualizar.setNome(input("Digite o novo nome: "))
-                  con.manipularBanco(novoUsuarioAtualizar.atualizarJogo())
                 case 2:
                   novoUsuarioAtualizar.setDuracao(input("Digite a nova duração: "))
-                  con.manipularBanco(novoUsuarioAtualizar.atualizarJogo())
                 case 3:
                   novoUsuarioAtualizar.setNumJogadores(input("Digite o novo número de jogadores: "))
-                  con.manipularBanco(novoUsuarioAtualizar.atualizarJogo())
                 case 4:
                   novoUsuarioAtualizar.setIdade(input("Digite a nova idade mínima: "))
-                  con.manipularBanco(novoUsuarioAtualizar.atualizarJogo())
                 case 5:
                   novoUsuarioAtualizar.setEditora(input("Digite a nova editora: "))
-                  con.manipularBanco(novoUsuarioAtualizar.atualizarJogo())
+              con.manipularBanco(novoUsuarioAtualizar.atualizarJogo())
             case 4:
               mostrarUsuarios()
               escolhaDeletarUsuario = int(input("Escolha pelo ID qual jogo você quer deletar: "))
-              usuarioEscolhidoDeletar = con.consultarBanco(buscarUsuarioEscolhido(escolhaDeletarUsuario))
+              usuarioEscolhidoDeletar = con.consultarBanco(con.consultaPorId("usuarios",escolhaDeletarUsuario))
               
-              novoUsuarioDeletar = Usuario(usuarioEscolhidoDeletar[0][0], usuarioEscolhidoDeletar[0][1], usuarioEscolhidoDeletar[0][2], usuarioEscolhidoDeletar[0][3])
+              novoUsuarioDeletar = criarObjeto(usuarioEscolhidoDeletar, "Usuario")
               
               con.manipularBanco(novoUsuarioDeletar.deletarJogo())
 except(Error) as error:

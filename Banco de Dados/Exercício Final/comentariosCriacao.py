@@ -34,7 +34,7 @@
 	
 # );
 
-# CREATE TABLE relacaoJogosColecao(
+# CREATE TABLE colecao_jogos(
 # 	id INT GENERATED ALWAYS AS IDENTITY,
 # 	id_colecao INT NOT NULL,
 # 	id_jogo INT NOT NULL,
@@ -52,11 +52,16 @@
 # 			ON UPDATE NO ACTION,
 	
 # 	PRIMARY KEY(id)
-# )
+# );
 
 # INSERT INTO jogos 
 # 	VALUES
 # 		(DEFAULT, 'Arcadia Quest', '120', '1-4', '12', 'Galapagos'),
-# 		(DEFAULT, 'Coup', '10', '4-10', '10', 'Mandala')
-
+# 		(DEFAULT, 'Coup', '10', '4-10', '10', 'Mandala');
+		
+# INSERT INTO usuarios 
+# 	VALUES
+# 		(DEFAULT, 'Abelardo Júnior', '12345678901', '10-08-1995'),
+# 		(DEFAULT, 'Andressa Alencar', '12345678902', '08-08-1990');
+		
 # SELECT * FROM jogos

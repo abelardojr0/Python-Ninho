@@ -15,6 +15,8 @@
 # 	nome VARCHAR(255) NOT NULL,
 # 	cpf CHAR(11),
 # 	anoNasc DATE,
+# 	login VARCHAR(255) NOT NULL,
+# 	senha VARCHAR(255) NOT NULL,
 	
 # 	PRIMARY KEY (id)
 	
@@ -61,7 +63,7 @@
 		
 # INSERT INTO usuarios 
 # 	VALUES
-# 		(DEFAULT, 'Abelardo Júnior', '12345678901', '10-08-1995'),
-# 		(DEFAULT, 'Andressa Alencar', '12345678902', '08-08-1990');
+# 		(DEFAULT, 'Abelardo Júnior', '12345678901', '10-08-1995', 'abel', '123'),
+# 		(DEFAULT, 'Andressa Alencar', '12345678902', '08-08-1990' , 'anndy', '456');
 		
 # SELECT * FROM jogos

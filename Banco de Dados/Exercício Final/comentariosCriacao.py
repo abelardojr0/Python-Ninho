@@ -67,3 +67,12 @@
 # 		(DEFAULT, 'Andressa Alencar', '12345678902', '08-08-1990' , 'anndy', '456');
 		
 # SELECT * FROM jogos
+
+# SELECT usuarios.nome, jogos.nome FROM colecao_jogos
+# 	INNER JOIN colecao 
+# 		ON colecao_jogos.id_colecao = colecao.id
+# 	INNER JOIN jogos
+# 		ON colecao_jogos.id_jogo = jogos.id
+# 	INNER JOIN usuarios
+# 		ON colecao.id_usuario = usuarios.id
+# 	WHERE usuarios.id = '1'

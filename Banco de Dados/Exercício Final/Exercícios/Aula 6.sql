@@ -17,6 +17,8 @@ CREATE TABLE disciplina(
 	Cod_Disciplina INT GENERATED ALWAYS AS IDENTITY,
 	nome VARCHAR(255) NOT NULL,
 	cod_curso INT REFERENCES curso (id),
+
+	PRIMARY KEY (Cod_Disciplina)
 );
 INSERT INTO disciplina 
 	VALUES ('DEFAULT', 'HTML', '1');
@@ -26,7 +28,9 @@ CREATE TABLE matricula(
 	Nro_matricula INT GENERATED ALWAYS AS IDENTITY,
 	semestre INT,
 	ano INT,
-	Nro_faltas INT
+	Nro_faltas INT,
+	
+	PRIMARY KEY (Nro_matricula)
 );
 INSERT INTO matricula
 	VALUES ('DEFAULT', '2', '2022', '5');

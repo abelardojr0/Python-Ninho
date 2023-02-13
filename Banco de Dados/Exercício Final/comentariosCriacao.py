@@ -25,7 +25,7 @@
 # CREATE TABLE colecao(
 # 	id INT GENERATED ALWAYS AS IDENTITY,
 # 	id_usuario INT NOT NULL,
-	
+#   nome VARCHAR(255),
 # 	CONSTRAINT fk_usuario
 # 		FOREIGN KEY (id_usuario)
 # 			REFERENCES usuarios (id)

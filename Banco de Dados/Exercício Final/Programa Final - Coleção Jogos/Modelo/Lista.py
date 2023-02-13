@@ -18,27 +18,24 @@ class Lista:
   
   def inserirLista(self):
     query = (f'''
-             INSERT INTO colecao (id_usuario, nome)
+            INSERT INTO colecao (id_usuario, nome)
                                     VALUES ('{self.id_usuario}', '{self.nome}')
-             ''')
+            ''')
     return query
   
   def visualizarLista(self):
     query = (f'''
               SELECT id, nome FROM colecao
                   WHERE id_usuario = '{self.id_usuario}'
-             ''')
+            ''')
     print("Sua lista de coleções")
     for colecao in query:
       print(f"{colecao[0]} - {colecao[1]}")
       
-  def atualizarLista(self):
+  def deletarLista(self):
     query = (f'''
-             UPDATE colecao
-             SET 
-              id_usuario = '{self.id_usuario}'
-              nome = '{self.nome}'
-            WHERE id = {self.id}
-             ''')
+            DELETE FROM colecao
+                WHERE id = '{self.id}' 
+            ''')
     return query
     

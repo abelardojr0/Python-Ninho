@@ -2,12 +2,11 @@ from Controle.Conexao import Conexao
 from Modelo.Jogo import Jogo
 from Modelo.Usuario import Usuario
 from Modelo.Lista import Lista
-from Modelo.Colecao import Colecao
 
 from psycopg2 import Error
 
 try:
-  con = Conexao("Luderia", "postgres", "postgres", "localhost", "5432") #CRIANDO CONEXÃO COM O BANCO
+  con = Conexao("Luderia", "postgres", "123", "localhost", "5432") #CRIANDO CONEXÃO COM O BANCO
   
   def mostrar(tipo): #FUNÇÃO PARA MOSTRAR ID E NOME DE UMA TABELA
     if tipo == "Jogos":
@@ -20,18 +19,18 @@ try:
             Nome - {item[1]}
             """)
   
-  def mostrarListas(id):
+  def mostrarListas(id_usuario):
     listaDeColecoes = con.consultarBanco(f'''
                                         SELECT id, nome FROM colecao
-                                        WHERE id_usuario = '{id}'
+                                        WHERE id_usuario = '{id_usuario}'
                                         ''')
     print("Sua lista de coleções")
     for colecao in listaDeColecoes:
         print(f"""
               ID - {colecao[0]}
               Nome - {colecao[1]}""")
-        
-  def listarColecao(id, idLista):
+
+  def listarColecao(id_usuario, id_lista):
     listaJogos = con.consultarBanco(f'''
                                 SELECT colecao_jogos.id, jogos.nome FROM colecao_jogos
                                   INNER JOIN colecao 
@@ -40,11 +39,24 @@ try:
                                     ON colecao_jogos.id_jogo = jogos.id
                                   INNER JOIN usuarios
                                     ON colecao.id_usuario = usuarios.id
-                                  WHERE usuarios.id = '{id}' AND colecao_jogos.id_colecao = '{idLista}'
+                                  WHERE usuarios.id = '{id_usuario}' AND colecao_jogos.id_colecao = '{id_lista}'
                                 ''')
     for jogo in listaJogos:
       print(f"{jogo[0]} - {jogo[1]}")
 
+  def inserirJogoNaColecao(id_colecao, id_jogo):
+    query = (f'''
+            INSERT INTO colecao_jogos (id_colecao, id_jogo)
+              VALUES('{id_colecao}', '{id_jogo}')
+            ''')
+    return query
+  
+  def deletarItemDaColecao(id):
+    query = (f'''
+            DELETE FROM colecao_jogos
+              WHERE id= '{id}'
+            ''')
+    return query
   
   def criarObjeto(acao, tabela, tipo):
     escolha = int(input(f"Escolha pelo ID qual {tipo} você quer {acao}: "))  #RECEBO UM NÚMERO DA ESCOLHA
@@ -55,11 +67,8 @@ try:
       objetoCriado = Usuario(opcaoEscolhida[0][0], opcaoEscolhida[0][1], opcaoEscolhida[0][2], opcaoEscolhida[0][3], opcaoEscolhida[0][4], opcaoEscolhida[0][5])  #CRIA UM OBJETO DA CLASSE USUARIO, E PASSSA OS DADOS DA LISTA COMO PARAMETRO
     elif tipo == "lista":
       objetoCriado = Lista(opcaoEscolhida[0][0], opcaoEscolhida[0][1], opcaoEscolhida[0][2])
-    elif tipo == "colecao":
-      objetoCriado = Colecao(opcaoEscolhida[0][0], opcaoEscolhida[0][1], opcaoEscolhida[0][2])
     return objetoCriado
-  
-  
+
   def gerarMenu(titulo, campos): #FUNÇÃO FEITA PARA GERAR MENUS DURANTE A APLICAÇÃO
     print(f"""      
         MENU {titulo}
@@ -70,7 +79,6 @@ Escolha o que você deseja fazer""") #PRINT APENAS DECORATIVO
     escolhaMenuGerado = int(input("Digite o número da opção escolhida: ")) #INPUT QUE VAI GUARDAR A ESCOLHA DO USUÁRIO
     return escolhaMenuGerado #RETORNA JUSTAMENTE ESSE NÚMERO INTEIRO ESCOLHIDO
   
-  
   def fazerLogin():
     login = input("Login: ")
     senha =  input("Senha: ")
@@ -79,16 +87,20 @@ Escolha o que você deseja fazer""") #PRINT APENAS DECORATIVO
                             WHERE login = '{login}' AND senha = '{senha}'
                           ''')
     return usuario
- 
-  escolhaMenuPrincipal = 1 #DECLARO A VARIAVEL COM UM NÚMERO ALEATÓRIO, APENAS PARA ESCAPAR DO WHILE
-  while escolhaMenuPrincipal != 0: #LOOP QUE VAI SER EXECUTADO ATÉ O USUARIO DECIDIR SAIR DIGITANDO O NÚMERO ZERO
-    escolhaMenuPrincipal = gerarMenu("PRINCIPAL", ["Manipular Jogos", "Manipular Usuários", "Manipular coleção"]) #VARIAVEL QUE IRÁ RETORNAR O MENU DE ESCOLHAS E A ESCOLHA DO USUARIO SERÁ SEU VALOR (INT)
+  
+  while True: #LOOP QUE VAI SER EXECUTADO ATÉ O USUARIO DECIDIR SAIR DIGITANDO O NÚMERO ZERO
+    escolhaMenuPrincipal = gerarMenu("PRINCIPAL", ["Manipular Jogos", "Manipular Usuários", "Manipular Listas"]) #VARIAVEL QUE IRÁ RETORNAR O MENU DE ESCOLHAS E A ESCOLHA DO USUARIO SERÁ SEU VALOR (INT)
     match escolhaMenuPrincipal:
+      case 0: #OPÇÃO DE SAIR
+        break
+  
       case 1: #CASO ELE ESCOLHA MANIPULAR OS JOGOS
-        escolhaMenuJogos = 1 #MESMA TÁTICA PARA ESCAPAR DO WHILE
-        while escolhaMenuJogos !=0: #MESMA TÁTICA DE LOOP
+
+        while True:
           escolhaMenuJogos = gerarMenu("DE JOGOS", ["Inserir novo jogo", "Visualizar jogo", "Atualizar jogo", "Deletar jogo"]) #CRIANDO OUTRO MENU, AGORA PARA OS JOGOS, A VARIAVEL VAI RETORNARU UM INT ASSIM COMO OS OUTROS.
           match escolhaMenuJogos:
+            case 0:
+              break
             case 1: # INSERIR JOGO ---------------------------------------------------------------------------------------------------------------------------------------
               novoJogo = Jogo(None, input("Nome: "), input("Duração: "), input("Número de jogadores: "), input("Idade mínima: "), input("Editora: ")) #VARIÁVEL SERÁ UM OBJETO COM OS DADOS PASSADOS PELO INPUT
               con.manipularBanco(novoJogo.inserirJogo()) #MANIPULANDO O BANCO, PASSANDO A QUERY DE INSERT DECLARADA NO MÉTODO INSERIRJOGO NA CLASSE JOGO
@@ -121,10 +133,12 @@ Escolha o que você deseja fazer""") #PRINT APENAS DECORATIVO
               print("Jogo deletado com sucesso!")
               
       case 2: #MANIPULANDO USUÁRIO (TODOS OS PROCEDIMENTOS AQUI EM BAIXO SÃO IGUAIS AOS DO CRUD ACIMA POR ISSO NÃO ESTÃO COMENTADOS)
-        escolhaMenuUsuarios = 1
-        while escolhaMenuUsuarios !=0:
+        
+        while True:
           escolhaMenuUsuarios = gerarMenu("DE USUÁRIOS", ["Inserir novo usuário", "Visualizar usuário", "Atualizar usuário", "Deletar usuário"])
           match escolhaMenuUsuarios:
+            case 0:
+              break
             case 1:
               novoUsuario = Usuario(None, input("Nome: "), input("CPF: "),input("Data de nascimento: "), input("Login: "), input("Senha: "))
               con.manipularBanco(novoUsuario.inserirUsuario())
@@ -156,62 +170,55 @@ Escolha o que você deseja fazer""") #PRINT APENAS DECORATIVO
               con.manipularBanco(novoObjeto.deletarUsuario())
               print("Usuário deletado com sucesso!")
 
-      case 3: 
+      case 3:  #MANIPULAR LISTAS DE COLEÇÕES
 
         usuarioLogado = fazerLogin()
-        idUsuario = usuarioLogado[0][0]
-        nomeUsuario = usuarioLogado[0][1]
+        id_usuario = usuarioLogado[0][0]
+        nome_usuario = usuarioLogado[0][1]
         
         if usuarioLogado != []:
-          print(f"Bem vindo {nomeUsuario}")
-          escolhaMenuColecao = 1
-          while escolhaMenuColecao != 0:
-            escolhaMenuColecao = gerarMenu("DO USUÁRIO", ["Criar coleção", "Visualizar coleções", "Editar coleção", "Deletar da Coleção"])
+          print(f"Bem vindo {nome_usuario}")
+          
+          while True:
+            escolhaMenuColecao = gerarMenu("DO USUÁRIO", ["Criar lista", "Visualizar listas", "Editar lista", "Deletar da lista"])
             
             match escolhaMenuColecao:
+              case 0: 
+                break
               case 1:
-                novaLista = Lista(None, idUsuario, input("Nome: "))
+                novaLista = Lista(None, id_usuario, input("Nome: "))
                 con.manipularBanco(novaLista.inserirLista())
-                print("Coleção cadastrada com sucesso!")
-                # nomeColecao = input("Digite o nome da sua coleção: ")
-                # con.manipularBanco(f'''
-                #                   INSERT INTO colecao (id_usuario, nome)
-                #                     VALUES ('{idUsuario}', '{nomeColecao}')
-                #                   ''')
+                print("Lista cadastrada com sucesso!")
               case 2:
-                mostrarListas(idUsuario)
+                print("Suas listas existentes: ")
+                mostrarListas(id_usuario)
               case 3:
-                mostrarListas(idUsuario)
-                idEscolhido = int(input("Escolha qual lista você quer editar: "))
-                escolhaLista = 1
-                while escolhaLista != 0:
+                mostrarListas(id_usuario)
+                listaEditar = criarObjeto(acao="atualizar", tabela="colecao", tipo="lista")
+                while True:
                   escolhaLista = gerarMenu("DA COLEÇÃO", ["Inserir item na coleção", "Visualizar item da coleção", "Deletar item da coleção"])
                   match escolhaLista:
+                    case 0: 
+                      break
                     case 1:
                       mostrar("Jogos")
-                      escolhaJogoInserir = int(input("Escolha pelo ID qual jogo você quer inserir na sua lista: "))
-                      con.manipularBanco(f'''
-                                         INSERT INTO colecao_jogos (id_colecao, id_jogo)
-                                          VALUES('{idEscolhido}', '{escolhaJogoInserir}')
-                                         ''')
+                      id_jogo = int(input("Escolha pelo ID qual jogo você quer inserir na sua lista: "))
+                      con.manipularBanco(inserirJogoNaColecao(listaEditar.id, id_jogo))
+                      print("Item da coleção adicionado com sucesso.")
                     case 2:
                       print("Sua coleção: ")
-                      listarColecao(idUsuario, idEscolhido)
+                      listarColecao(id_usuario, listaEditar.id)
                     case 3:
                       print("Sua coleção: ")
-                      listarColecao(idUsuario, idEscolhido)
-                      escolhaColecaoEditar = int(input("Escolha pelo ID qual item da sua coleção você quer deletar: "))
-                      con.manipularBanco(f'''
-                                         DELETE FROM colecao_jogos
-                                         WHERE id= '{escolhaColecaoEditar}'
-                                         ''')
+                      listarColecao(id_usuario, listaEditar.id)
+                      id_item = int(input("Escolha pelo ID qual item da sua coleção você quer deletar: "))
+                      con.manipularBanco(deletarItemDaColecao(id_item))
+                      print("Item da coleção deletado com sucesso.")
+                print("Lista Atualizada com sucesso")
               case 4:
-                mostrarListas(idUsuario)
-                escolha = int(input("Escolha pelo ID qual lista você deseja excluir ?"))
-                con.manipularBanco(f'''
-                                  DELETE FROM colecao
-                                    WHERE id = '{escolha}'
-                                  ''')
+                mostrarListas(id_usuario)
+                listaExcluir = criarObjeto(acao="deletar", tabela="colecao", tipo="lista" )
+                con.manipularBanco(listaExcluir.deletarLista())
         else:
           print("Login ou senha incorretos")
 except(Error) as error:

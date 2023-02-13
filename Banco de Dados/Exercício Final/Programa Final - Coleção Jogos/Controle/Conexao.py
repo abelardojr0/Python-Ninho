@@ -15,8 +15,8 @@ class Conexao:
     cursor = self.conexao.cursor()
     cursor.execute(f'''
                    SELECT * FROM "{tabela}"
-                   ORDER BY id ASC
-                   ''')
+                  ORDER BY id ASC
+                  ''')
     resultado = cursor.fetchall()
     cursor.close
     return resultado  
@@ -25,7 +25,7 @@ class Conexao:
     query = (f'''
                    SELECT * FROM "{tabela}"
                     WHERE id = {id}
-                   ''')
+                  ''')
     return query
   
   def manipularBanco(self, sql):
@@ -48,7 +48,7 @@ class Conexao:
                         WHERE cont >= 2
                       
 );
-                   ''')
+                  ''')
     self._conexao.commit()
     cursor.close
     

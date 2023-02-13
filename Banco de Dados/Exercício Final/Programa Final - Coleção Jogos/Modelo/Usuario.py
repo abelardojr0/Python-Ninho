@@ -27,15 +27,15 @@ class Usuario:
   def getLogin(self):
     return self.login
   
-  def setSenha(self, novoSenha):
-    self.senha = novoSenha
+  def setSenha(self, novaSenha):
+    self.senha = novaSenha
   def getSenha(self):
     return self.senha
   
   def inserirUsuario(self):
     query = (f'''
             INSERT INTO "usuarios"
-              VALUES(DEFAULT, '{self.nome}','{self.cpf}', '{self.anoNasc}', '{self.login}', '{self.senha}' )
+              VALUES(DEFAULT, '{self.nome}','{self.cpf}','{self.anoNasc}','{self.login}','{self.senha}' )
             ''')
     return query
   
@@ -54,8 +54,8 @@ class Usuario:
             UPDATE "usuarios"
               SET "nome" = '{self.nome}',
                   "cpf" = '{self.cpf}',
-                  "anonasc" = '{self.anoNasc}'
-                  "login" = '{self.login}'
+                  "anonasc" = '{self.anoNasc}',
+                  "login" = '{self.login}',
                   "senha" = '{self.senha}'
               WHERE "id" = '{self.id}'
             ''')
